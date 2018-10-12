@@ -13,13 +13,14 @@ NOTE: What pywavelets call cV and cH is reversed from what is typical. These fun
 +--------+--------+
 '''
 import pywt
+import numpy as np
 
 def dwt2(z, wavelet, levels=1, mode='periodization'):
     if levels == 0:
         return z
 
     cA, (cV, cH, cD) = pywt.dwt2(z, wavelet, mode)
-    return np.block([[dwt2(cA, levels-1), cH], [cV, cD]])
+    return np.block([[dwt2(cA, wavelet, levels-1), cH], [cV, cD]])
 
 def idwt2(z, wavelet, levels=1, mode='periodization'):
     if levels == 0:
@@ -35,4 +36,4 @@ def idwt2(z, wavelet, levels=1, mode='periodization'):
     z = z.copy()
     z[:m, :m] = pywt.idwt2((cA, (cV, cH, cD)), wavelet, mode)
 
-    return idwt2(z, levels-1)
+    return idwt2(z, wavelet, levels-1)
