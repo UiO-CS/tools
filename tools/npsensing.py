@@ -1,6 +1,6 @@
 import numpy as np
 
-from pywtwrappers import dwt2, idwt2
+from .pywtwrappers import dwt2, idwt2
 
 # TODO: Better implemented as a class?
 def fourier_wavelet_2d(wavelet, levels, mask):
