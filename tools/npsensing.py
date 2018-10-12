@@ -29,7 +29,7 @@ def fourier_wavelet_2d(wavelet, levels, mask):
         """
 
         result = idwt2(x, wavelet, levels)
-        result = np.fft.ifft2(result)
+        result = np.fft.fft2(result)
         result[~mask] = 0
         return result
 
@@ -41,8 +41,10 @@ def fourier_wavelet_2d(wavelet, levels, mask):
         calculates P_\Omega* P_\Omega
 
         """
-        result = np.fft.ifft2(result)
+        result = np.fft.ifft2(x)
         result = dwt2(result, wavelet, levels)
+
+        return result
 
 
     return forward, adjoint
