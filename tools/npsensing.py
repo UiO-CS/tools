@@ -28,7 +28,7 @@ def fourier_wavelet_2d(wavelet, levels, mask):
         reordered appropriately.
         """
         result = idwt2(x, wavelet, levels)
-        result = np.fft.fft2(result)
+        result = np.fft.fft2(result, norm='ortho')
         result[~mask] = 0
         return result
 
@@ -38,9 +38,9 @@ def fourier_wavelet_2d(wavelet, levels, mask):
 
         Adjoint of P_\Omega is not necessary, as the forward transform actually
         calculates P_\Omega* P_\Omega
-
         """
-        result = np.fft.ifft2(x)
+
+        result = np.fft.ifft2(x, norm='ortho')
         result = dwt2(result, wavelet, levels)
 
         return result
