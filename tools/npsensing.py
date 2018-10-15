@@ -1,6 +1,6 @@
 import numpy as np
 
-from .pywtwrappers import dwt2, idwt2
+from .pywtwrappers import dwt2, idwt2, dwt, idwt
 
 # TODO: Better implemented as a class?
 def fourier_wavelet_2d(wavelet, levels, mask):
@@ -27,7 +27,6 @@ def fourier_wavelet_2d(wavelet, levels, mask):
         Note that fftshift is not performed. The mask should therefore be
         reordered appropriately.
         """
-
         result = idwt2(x, wavelet, levels)
         result = np.fft.fft2(result)
         result[~mask] = 0
@@ -50,3 +49,23 @@ def fourier_wavelet_2d(wavelet, levels, mask):
     return forward, adjoint
 
 
+def fourier_wavelet_1d(wavelet, levels, mask):
+    """See fourier_wavelet_2d
+
+    Written primarily to confirm that the eigenvalue is 1 by power iterations.
+    It seems that the mask makes the system too unstable"""
+
+    def forward(x):
+        result = idwt(x, wavelet, levels)
+        result = 1./np.sqrt(x.size) * np.fft.fft(result)
+        result[~mask] = 0
+        return result
+
+
+    def adjoint(x):
+        result = np.fft.ifft(np.sqrt(x.size) * x)
+        result = dwt(result, wavelet, levels)
+
+        return result
+
+    return forward, adjoint
