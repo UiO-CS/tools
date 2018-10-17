@@ -34,12 +34,11 @@ def fourier_wavelet_2d(wavelet, levels, mask):
 
 
     def adjoint(x):
-        """W F*
+        """W F* P
 
-        Adjoint of P_\Omega is not necessary, as the forward transform actually
-        calculates P_\Omega* P_\Omega
         """
-
+        result = x.copy()
+        result[~mask] = 0
         result = np.fft.ifft2(x, norm='ortho')
         result = dwt2(result, wavelet, levels)
 
