@@ -8,9 +8,22 @@ import os
 
 class DataSet:
 
-    def __init__(self, directory, namepattern, fileloader, data_key=None):
+    def __init__(self, directory, namepattern, fileloader, data_key=None, label_key=None,
+                 scale=False):
+        """
+
+        Args:
+            directory (str):        Directory to traverse to find data files
+            namepattern (str):      Pattern (regex) for file names of data files to open
+            fileloader (callable):  Function that reads the file
+            data_key (object):      If loaded data is a dictinoary, extract this feature as data
+            label_key (object):     If loaded data is a dictinoary, extract this feature as key
+            scale (bool):           Scale data to be in [0, 1]
+        """
         self.fileloader = fileloader
         self.data_key = data_key
+        self.label_key = label_key
+        self.scale = scale
 
         self.data_files = []
         self.index = 0
@@ -21,6 +34,7 @@ class DataSet:
 
         self.next_batch = None
         self.next_batch_sampled = None
+        self.next_batch_labels = None
 
 
     def _traverse_dir_and_queue_files(self, directory, namepattern):
@@ -51,33 +65,58 @@ class DataSet:
         if self.next_batch is not None: return self.next_batch.shape[0]
 
         data_list = [None] * size
+        label_list = [None] * size
 
         # Read files and store temporarily
         for i in range(size):
-            local_data = self.fileloader(self._get_next())
+            local_raw_data = self.fileloader(self._get_next())
 
             if self.data_key is not None:
-                local_data = local_data[self.data_key]
+                local_data = local_raw_data[self.data_key]
+            if self.label_key is not None:
+                label_list[i] = local_raw_data[self.label_key]
 
-            data_list[i] = local_data / np.max(np.abs(local_data)) * 256
+            # Map to [0, 1]
+            if self.scale:
+                data_list[i] = local_data / np.max(np.abs(local_data))
+            else:
+                data_list[i] = local_data
 
         # Store array
         next_batch = np.array(data_list)
         self.next_batch = next_batch
 
+        if self.label_key is not None:
+            next_labels = np.array(label_list)
+            self.next_batch_labels = next_labels
+
+
+    def _fix_dimensions(self, x):
+        if len(self.next_batch.shape) == 3:
+            return np.expand_dims(x, -1)
+        else:
+            return x
+
 
     def get_next_batch(self):
-        temp_batch = np.expand_dims(self.next_batch, -1)
+        temp_batch = self._fix_dimensions(self.next_batch)
         self.next_batch = None
 
+        return_this = [temp_batch]
+
         if self.next_batch_sampled is not None:
-            temp_sampled = np.expand_dims(self.next_batch_sampled, -1)
+            temp_sampled = self._fix_dimensions(self.next_batch)
             self.next_batch_sampled = None
 
-            return temp_batch, temp_sampled
+            return_this.append(temp_sampled)
 
-        else:
-            return temp_batch
+        if self.next_batch_labels is not None:
+            temp_labels = self.next_batch_labels
+            self.next_batch_labels = None
+
+            return_this.append(temp_labels)
+
+        return return_this
 
 
     def sample_loaded_batch(self, operator):
