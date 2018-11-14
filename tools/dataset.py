@@ -1,3 +1,5 @@
+from collections import Sized
+
 import numpy as np
 import sigpy as sp
 
@@ -6,7 +8,7 @@ import re
 import os
 
 
-class DataSet:
+class DataSet(Sized):
 
     def __init__(self, directory, namepattern, fileloader, data_key=None, label_key=None,
                  scale=False):
@@ -126,3 +128,7 @@ class DataSet:
             data_list[i] = operator(self.next_batch[i])
 
         self.next_batch_sampled = np.array(data_list, dtype=np.complex64)
+
+
+    def __len__(self):
+        return len(self.data_files)
