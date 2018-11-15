@@ -49,6 +49,8 @@ class DataSet(Sized):
                 if re.fullmatch(re_pattern, fname) != None:
                     self.data_files.append(dirName + "/" + fname)
 
+        random.shuffle(self.data_files)
+
 
     def _get_next(self):
         if self.index < len(self.data_files):
@@ -75,6 +77,9 @@ class DataSet(Sized):
 
             if self.data_key is not None:
                 local_data = local_raw_data[self.data_key]
+            else:
+                local_data = local_raw_data
+
             if self.label_key is not None:
                 label_list[i] = local_raw_data[self.label_key]
 
