@@ -111,7 +111,7 @@ class DataSet(Sized):
 
 
     def _fix_dimensions(self, x):
-        if len(self.next_batch.shape) == 3:
+        if len(x.shape) == 3:
             return np.expand_dims(x, -1)
         else:
             return x
@@ -124,7 +124,7 @@ class DataSet(Sized):
         return_this = [temp_batch]
 
         if self.next_batch_sampled is not None:
-            temp_sampled = self._fix_dimensions(self.next_batch)
+            temp_sampled = self._fix_dimensions(self.next_batch_sampled)
             self.next_batch_sampled = None
 
             return_this.append(temp_sampled)
