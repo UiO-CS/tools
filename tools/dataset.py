@@ -11,7 +11,7 @@ import os
 class DataSet(Sized):
 
     def __init__(self, directory, namepattern, fileloader, data_key=None, label_key=None,
-                 scale=False):
+                 scale=False, cache=False):
         """
 
         Args:
@@ -26,8 +26,10 @@ class DataSet(Sized):
         self.data_key = data_key
         self.label_key = label_key
         self.scale = scale
+        self.cache = cache
 
         self.data_files = []
+        self.cached_files = {}
         self.index = 0
 
         self.epoch = 0
@@ -50,6 +52,15 @@ class DataSet(Sized):
                     self.data_files.append(dirName + "/" + fname)
 
         random.shuffle(self.data_files)
+
+
+    def _get_data_sample(self, filename):
+        if filename in self.cached_files:
+            return self.cached_files[filename]
+        else:
+            file = self.fileloader(filename)
+            if self.cache: self.cached_files[filename] = file
+            return file
 
 
     def _get_next(self):
@@ -85,6 +96,7 @@ class DataSet(Sized):
 
             # Map to [0, 1]
             if self.scale:
+                local_data -= np.min(np.abs(local_data))
                 data_list[i] = local_data / np.max(np.abs(local_data))
             else:
                 data_list[i] = local_data
