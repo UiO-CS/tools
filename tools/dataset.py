@@ -84,7 +84,7 @@ class DataSet(Sized):
 
         # Read files and store temporarily
         for i in range(size):
-            local_raw_data = self.fileloader(self._get_next())
+            local_raw_data = self._get_data_sample(self._get_next())
 
             if self.data_key is not None:
                 local_data = local_raw_data[self.data_key]
